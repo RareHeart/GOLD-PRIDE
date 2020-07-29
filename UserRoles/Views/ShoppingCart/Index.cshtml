@@ -1,0 +1,364 @@
+﻿@model UserRoles.ViewModels.ShoppingCartViewModel
+@using Microsoft.AspNet.Identity
+<!DOCTYPE HTML>
+<html>
+<head>
+    @*<title>Flat Cart Widget  Responsive Widget Template | Home :: w3layouts</title>*@
+    <link href="/cart/css/style.css" rel="stylesheet" type="text/css" media="all" />
+    <!-- Custom Theme files -->
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="keywords" content="Flat Cart Widget Responsive, Login form web template, Sign up Web Templates, Flat Web Templates, Login signup Responsive web template, Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, SonyErricsson, Motorola web design" />
+    <!--google fonts-->
+    <link href='/cart/fonts.googleapis.com/css?family=Montserrat:400,700' rel='stylesheet' type='text/css'>
+    
+    @*<script>
+            $(document).ready(function (c) {
+                $('.close').on('click', function (c) {
+                    $('.cake-top').fadeOut('slow', function (c) {
+                        $('.cake-top').remove();
+                    });
+                });
+            });
+        </script>
+
+        <script>
+            $(document).ready(function (c) {
+                $('.close-btm').on('click', function (c) {
+                    $('.cake-bottom').fadeOut('slow', function (c) {
+                        $('.cake-bottom').remove();
+                    });
+                });
+            });
+        </script>*@
+
+    @{
+        ViewBag.Title = "Shopping Cart";
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    <script src="/Scripts/jquery-3.3.1.min.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            // Document.ready -> link up remove event handler
+            $(".RemoveLink").click(function () {
+                // Get the id from the link
+                var recordToDelete = $(this).attr("data-id");
+                if (recordToDelete != '') {
+                    // Perform the ajax post
+                    $.post("/ShoppingCart/RemoveFromCart", { "id": recordToDelete },
+                        function (data) {
+                            // Successful requests get here
+                            // Update the page elements
+                            if (data.ItemCount == 0) {
+                                $('#row-' + data.DeleteId).fadeOut('fast');
+                            } else {
+                                $('#item-count-' + data.DeleteId).text(data.ItemCount);
+                            }
+                            $('#cart-total').text(data.CartTotal);
+                            $('#update-message').text(data.Message);
+                            $('#cart-status').text('Cart (' + data.CartCount + ')');
+                        });
+                }
+            });
+        });
+        function handleUpdate() {
+            // Load and deserialize the returned JSON data
+            var json = context.get_data();
+            var data = Sys.Serialization.JavaScriptSerializer.deserialize(json);
+
+            // Update the page elements
+            if (data.ItemCount == 0) {
+                $('#row-' + data.DeleteId).fadeOut('slow');
+            } else {
+                $('#item-count-' + data.DeleteId).text(data.ItemCount);
+            }
+
+            $('#cart-total').text(data.CartTotal);
+            $('#update-message').text(data.Message);
+            $('#cart-status').text('Cart (' + data.CartCount + ')');
+        }
+    </script>
+
+
+
+
+</head>
+@if (Request.IsAuthenticated)
+{
+    @*@using (Html.BeginForm())
+        {
+            All lines from <h3> tag to end are inside here
+        }*@
+    <body>
+        <br /><br /> <br /><br /> <br /><br />
+
+        <div class="cart">
+            <div class="cart-top">
+                <div class="cart-experience">
+
+                    <h4>Gold Pride </h4>
+                </div>
+                <div class="cart-login">
+                    <ul class="cart-login-text">
+                        <li>
+                        </li>
+                    </ul>
+                    <div class="clear"> </div>
+                </div>
+                <div class="clear"> </div>
+                <div class="clear"> </div>
+                <div class="clear"> </div>
+                <div class="clear"> </div>
+
+            </div>
+            <div class="cart-bottom">
+
+                <div class="table">
+                    <div>
+                        @for (int i = 0; i < Model.CartItems.Count; i++)
+                        {
+                            <p>
+                                @Html.ValidationMessageFor(model => model.CartItems[i].Count)
+                            </p>
+                        }
+                    </div>
+                    <div id="update-message"> </div>
+                    <table>
+                        <tbody>
+                            <tr class="main-heading">
+                                <th>Product Image</th>
+                                <th @*class="long-txt"*@>Product Name</th>
+
+                                <th>Price</th>
+                                <th>Quantity</th>
+
+                            </tr>
+                        </tbody>
+
+                    </table>
+                </div>
+                @{ int ix = 0;}
+                @foreach (var item in Model.CartItems)
+                {
+                    <div class="table">
+                        <table>
+                            <tbody>
+                                <tr id="row-@item.RecordID">
+                                <tr class="cake-top">
+                                    <td class="cakes">
+                                        <div class="product-img">
+                                            @try
+                                            {
+                                                var base64 = Convert.ToBase64String(item.Image);
+                                                var imgsrc = string.Format("data:image/jpg;base64,{0}", base64);
+                                                <img src='@imgsrc' style="max-width:100px;max-height:100px" />
+                                            }
+                                            catch
+                                            {
+                                                if (item.Image == null)
+                                                {
+                                                    <img width="40" height="40" src="https://ixxidesign.azureedge.net/media/2388044/marcus-kraft-12-dont-worry-be-happy-white.jpg?mode=max&width=562&height=749" />
+                                                }
+                                            }
+                                        </div>
+                                    </td>
+                                    <td></td>
+
+                                    <td class="cake-text">
+                                        <div class="product-text">
+                                            @Html.ActionLink(item.ItemsHire.ProductName, "ItemInventory", "ItemsHires", new { id = item.ProductID }, null)
+                                        </div>
+                                    </td>
+                                    <td></td>
+
+
+                                    <td class="price">
+                                        <h4>@item.ItemsHire.Price.ToString("C")</h4>
+                                    </td>
+
+
+                                    <td id="item-count-@item.RecordID">
+                                        <b>  @item.Count</b>
+                                    </td>
+
+                                    @*<td id="cart-total">
+                                            @Model.CartTotal
+                                        </td>*@
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>
+                                        <a href="#" class="RemoveLink"
+                                           data-id="@item.RecordID">
+                                            Remove from cart
+                                        </a>
+                                        @*<input type="button" class="RemoveLink" data-id="@item.RecordID" value="Remove From Cart" />*@
+
+                                    </td>
+
+                                </tr>
+
+
+                            </tbody>
+                        </table>
+                    </div>
+                    ix++;
+                }
+                <div class="vocher">
+                    @*<div class="dis-card">
+                            <h2>Discount Code or Voucher</h2>
+                            <p>Enter your discount code or voucher to receive a discount on your total order.</p>
+                            <form>
+                                <input type="text" value="">
+                                <input type="submit" value="Redeem">
+                            </form>
+                        </div>*@
+                    <div class="dis-total">
+                        <p id="cart-total">
+                            Total: @Model.CartTotal.ToString("C")
+                        </p>
+                        <div class="tot-btn">
+                            <a class="shop" href="/ItemsHires/ItemsInventory">Back to Shop</a>
+                            @*<a class="check" href="#">Continue to Checkout</a>*@
+                        </div>
+                    </div>
+                    <div class="clear"> </div>
+                </div>
+                @*<div class="col-md-4">
+                    <table>
+
+                        <tr>
+                            <td>
+                                Item Picture
+                            </td>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <td>
+                                Item Name
+                            </td>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+
+                            <td>
+                                Price (each)
+                            </td>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <td>
+                                Quantity
+                            </td>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+
+                            <th></th>
+                        </tr>
+                        @foreach (var item in Model.CartItems)
+                        {
+
+                            <tr id="row-@item.RecordID">
+                                <td>
+                                    @item.ItemsHire.Image
+                                    <div class="modal-body" style="padding:40px 50px;">
+                                        <div class=" col-md-5">
+                                            var base64 = Convert.ToBase64String(item.Image);
+                                var imgsrc = string.Format("data:image/jpg;base64,{0}", base64);
+                                            <img src='@Url.Action("RenderImage","ItemsHire", new { id = item.ProductID, @item.Image } )' style="max-width:150px;max-height:150px" />
+                                            <img src=" @Url.Action("RenderImage", "ItemsHire", new { id = item.Image })" width="150" height="150" />
+                                        </div>
+                                    </div>
+
+                                    @try
+                                    {
+
+                                        var base64 = Convert.ToBase64String(item.Image);
+                                        var imgsrc = string.Format("data:image/jpg;base64,{0}", base64);
+                                        <img src='@imgsrc' style="max-width:200px;max-height:200px" />
+
+
+                                    }
+                                    catch
+                                    {
+                                        if (item.Image == null)
+                                        {
+                                            <img width="40" height="40" src="https://ixxidesign.azureedge.net/media/2388044/marcus-kraft-12-dont-worry-be-happy-white.jpg?mode=max&width=562&height=749" />
+                                        }
+                                    }
+
+                                </td>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <td>
+                                    @Html.ActionLink(item.ItemsHire.ProductName, "ItemInventory", "ItemsHires", new { id = item.ProductID }, null)
+                                </td>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <td>
+                                    @item.ItemsHire.Price
+                                </td>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+
+                                <td id="item-count-@item.RecordID">
+                                    @item.Count
+                                </td>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <td>
+                                    <a href="#" class="RemoveLink"
+                                       data-id="@item.RecordID">
+                                        Remove from cart
+                                    </a>
+                                </td>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        }
+                        <tr>
+                            <td>
+                                Total
+                            </td>
+                            <td>
+                            </td>
+                            <td>
+                            </td>
+                            <td id="cart-total">
+                                @Model.CartTotal
+                            </td>
+                        </tr>*@
+
+
+                @*<p class="button">
+                        @Html.ActionLink("Checkout>> ", "AddressAndPayment", "Checkout")
+                    </p>*@
+                @*</table>*@
+                @*</div>*@
+            </div>
+        </div>
+    </body>
+}
+</html>
